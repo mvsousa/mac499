@@ -1,0 +1,63 @@
+version: '3'
+services:
+  extract:
+    container_name: 1_extract
+    build:
+      context: ./stages/extract
+      args:
+        DEFAULT_VARIABLE_EXAMPLE: 'root'
+    ports:
+      - 3301:5432
+  clean:
+    container_name: 2_clean
+    build:
+      context: ./stages/clean
+      args:
+        DEFAULT_VARIABLE_EXAMPLE: 'root'
+    ports:
+      - 3302:5432
+  conform:
+    container_name: 3_conform
+    build:
+      context: ./stages/conform
+      args:
+        DEFAULT_VARIABLE_EXAMPLE: 'root'
+    ports:
+      - 3303:5432
+  final:
+    container_name: 4_final
+    build:
+      context: ./stages/final
+      args:
+        DEFAULT_VARIABLE_EXAMPLE: 'root'
+    ports:
+      - 3304:5432
+  # ftp:
+  #   container_name: ftp_server
+  #   ports:
+  #     - '21:21'
+  #     - 30000-30009
+  #   build:
+  #     context: ./ftp
+  #   environment:
+  #     - PUBLICHOST=localhost
+  #     - FTP_USER_NAME=admin
+  #     - FTP_USER_PASS=admin
+  #     - FTP_USER_HOME=/home/ftpusers/admin
+  airflow:
+    container_name: airflow
+    build:
+      context: ./airflow
+      args:
+        DEFAULT_VARIABLE_EXAMPLE: 'root'
+    ports:
+      - 5555:5555
+      - 8080:8080
+    links:
+    #  - "ftp:ftp_server"
+      - "extract:1_extract"
+      - "clean:2_clean"
+      - "conform:3_conform"
+      - "final:4_final"
+    volumes:
+    - ./data:/usr/local/airflow/from/
